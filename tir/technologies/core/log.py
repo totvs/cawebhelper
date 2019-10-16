@@ -6,6 +6,9 @@ import uuid
 import csv
 import inspect
 import re
+import requests
+import json
+import platform
 from datetime import datetime
 from tir.technologies.core.config import ConfigLoader
 
@@ -18,46 +21,44 @@ class Log:
     >>> # Instanted inside base.py:
     >>> self.log = Log()
     """
-    def __init__(self, suite_datetime="", user="", station="", program="", program_date=time.strftime("01/01/1980 12:00:00"), version="", release="", database="", issue="", execution_id="", country="", folder="", test_type="TIR"):
+    def __init__(self, suite_datetime="", user="", station="", program="", program_date="", version="", release="", database="", issue="", execution_id="", country="", folder="", test_type=""):
         self.timestamp = time.strftime("%Y%m%d%H%M%S")
+        
+        today = datetime.today()
 
         self.user = user
         self.station = station
         self.program = program
-        self.program_date = program_date
+        self.program_date = "19800101"
         self.version = version
         self.release = release
         self.database = database
         self.initial_time = datetime.today()
         self.seconds = 0
         self.suite_datetime = suite_datetime
-
-        self.table_rows = []
         self.test_case_log = []
         self.csv_log = []
         self.invalid_fields = []
-        self.table_rows.append(self.generate_header())
         self.folder = folder
-        self.test_type = test_type
+        self.test_type = "TIR"
         self.issue = issue
         self.execution_id = execution_id
         self.country = country
         self.config = ConfigLoader()
+        self.ct_method = ""
+        self.ct_number = ""
+        self.so_type = platform.system()
+        self.so_version = f"{self.so_type } {platform.release()}"
+        self.build_version = ""
+        self.lib_version = ""
+        self.webapp_version = ""
+        self.date = today.strftime('%Y%m%d')
+        self.hour = time.strftime('%H:%M:%S')
+        self.hash_exec = ""
 
-    def generate_header(self):
+    def generate_result(self, result, message):
         """
-        Generates the header line on the log file.
-
-        Usage:
-
-        >>> # Calling the method:
-        >>> self.log.generate_header()
-        """
-        return ['Data','Usuário','Estação','Programa','Data Programa','Total CTs','Passou','Falhou', 'Segundos','Versão','Release', 'CTs Falhou', 'Banco de dados','Chamado','ID Execução','Pais', "Tipo de Teste"]
-
-    def new_line(self, result, message):
-        """
-        Appends a new line with data on log file.
+        Generate a result of testcase and export to a json.
 
         :param result: The result of the case.
         :type result: bool
@@ -67,60 +68,16 @@ class Log:
         Usage:
 
         >>> # Calling the method:
-        >>> self.log.new_line(True, "Success")
+        >>> self.log.generate_result(True, "Success")
         """
-        line = []
         total_cts = 1
-        passed = 1 if result else 0
-        failed = 0 if result else 1
+        result = 0 if result else 1
         printable_message = ''.join(filter(lambda x: x.isprintable(), message))[:650]
 
         if not self.suite_datetime:
             self.suite_datetime = time.strftime("%d/%m/%Y %X")
-        if self.get_testcase_stack() not in self.test_case_log:
-            line.extend([self.suite_datetime, self.user, self.station, self.program, self.program_date, total_cts, passed, failed, self.seconds, self.version, self.release, printable_message, self.database, self.issue, self.execution_id, self.country, self.test_type])
-            self.table_rows.append(line)
-            self.test_case_log.append(self.get_testcase_stack())
 
-    def save_file(self, filename):
-        """
-        Writes the log file to the file system.
-
-        Usage:
-
-        >>> # Calling the method:
-        >>> self.log.save_file()
-        """
-        
-        log_file = f"{self.user}_{uuid.uuid4().hex}_auto.csv"
-                
-        if len(self.table_rows) > 0:
-            try:
-                if self.folder:
-                    path = f"{self.folder}\\{self.station}"
-                    os.makedirs(f"{self.folder}\\{self.station}")
-                else:
-                    path = f"Log\\{self.station}"
-                    os.makedirs(f"Log\\{self.station}")
-            except OSError:
-                pass
-
-            if self.config.smart_test:
-                open("log_exec_file.txt", "w")
-            
-            testcases = self.list_of_testcases()
-
-            if ((len(self.table_rows[1:]) == len(testcases) and self.get_testcase_stack() not in self.csv_log) or (self.get_testcase_stack() == "setUpClass")) :
-                with open(f"{path}\\{log_file}", mode="w", newline="", encoding="windows-1252") as csv_file:
-                    csv_writer_header = csv.writer(csv_file, delimiter=';', quoting=csv.QUOTE_NONE)
-                    csv_writer_header.writerow(self.table_rows[0])
-                    csv_writer = csv.writer(csv_file, delimiter=';', quotechar='"', quoting=csv.QUOTE_NONNUMERIC)
-                    for line in self.table_rows[1:]:
-                        csv_writer.writerow(line)
-
-                print(f"Log file created successfully: {path}\\{log_file}")
-                            
-                self.csv_log.append(self.get_testcase_stack())
+        self.generate_json(self.generate_dict(result, printable_message))
 
     def set_seconds(self):
         """
@@ -150,3 +107,144 @@ class Log:
         [Internal]
         """
         return next(iter(list(map(lambda x: x.function, filter(lambda x: re.search('setUpClass', x.function) or re.search('test_', x.function), inspect.stack())))), None)
+
+    def get_testsuite_name(self):
+        """
+        Returns a Testsuite name
+        """
+        testsuite_stack = next(iter(list(filter(lambda x: "testsuite" in x.filename.lower(), inspect.stack()))),None)
+        
+        if testsuite_stack:
+            return testsuite_stack.filename.split("\\")[-1].split(".")[0]
+        else:
+            return ""
+
+    def get_testcase_name(self):
+        """
+        Returns a Testcase name
+        """
+        testcase_stack = next(iter(list(filter(lambda x: "testcase" in x.filename.lower(), inspect.stack()))),None)
+
+        if testcase_stack:
+            return testcase_stack.filename.split("\\")[-1].split(".")[0]
+        else:
+            return ""
+
+    def generate_dict(self, result, message):
+        """
+        Returns a dictionary with the log information
+        """
+        log_version = "20190819"
+
+        dict_key = {
+            "APPVERSION":self.build_version,
+            "CLIVERSION":self.webapp_version,
+            "COUNTRY":self.country,
+            "CTMETHOD":self.ct_method,
+            "CTNUMBER":self.ct_number,
+            "DATE":self.date,
+            "DATEPROGRAM":self.program_date,
+            "DBACCESS":"",
+            "DBTYPE":self.database,
+            "DBVERSION":"",
+            "FAILSCTS":message,
+            "HASHEXEC":self.hash_exec,
+            "HOUR":self.hour,
+            "HOURPROGRAM":"00:00:00",
+            "IDENTIFICADOR":self.issue,
+            "IDEXEC":self.config.execution_id,
+            "LIBVERSION":self.lib_version,
+            "LOGTOOL":self.test_type,
+            "LOGVERSION":self.test_type+log_version,
+            "PROGRAM":self.program,
+            "RELEASE":self.release,
+            "RESULT":str(result),
+            "SECONDS":str(self.seconds),
+            "SOTYPE":self.so_type,
+            "SOVERSION":self.so_version,
+            "TESTCASE":self.get_testcase_name(),
+            "TESTSUITE":self.get_testsuite_name(),
+            "TESTTYPE":"1",
+            "TOKEN":"",
+            "USER":self.user,
+            "VERSION":self.version,
+            "WORKSTATION":self.station
+        }
+
+        return dict_key
+    
+    def generate_json(self, dictionary):
+        """
+        """
+        server_address1 = "http://10.171.78.41:8006/rest/LOGEXEC/"
+        server_address2 = "http://10.171.78.43:8204/rest/LOGEXEC/"
+
+        status = None
+
+        success = False
+
+        data = dictionary
+
+        print(data['HASHEXEC'])
+
+        json_data = json.dumps(data)
+
+        endtime = time.time() + 15
+
+        while(time.time() < endtime and not success):
+
+            success = self.send_request(server_address1, json_data)
+
+            if not success:
+                success = self.send_request(server_address2, json_data)
+
+            time.sleep(1)
+        
+        if not success:
+            self.save_file(json_data)            
+
+    def send_request(self, server_address, json_data):
+        """
+        Send a post request to server
+        """
+        success = False
+
+        response = requests.post(server_address.strip(), data=json_data)
+
+        if response.status_code == 200:
+            print("Log de execucao enviado com sucesso!")
+            success = True
+        elif response.status_code == 201 or response.status_code == 204:
+            print("Log de execucao enviado com sucesso!")
+            success = True
+
+        return success
+
+    def save_file(self, json_data):
+        """
+        Writes the log file to the file system.
+
+        Usage:
+
+        >>> # Calling the method:
+        >>> self.log.save_file()
+        """
+
+        try:
+            if self.folder:
+                path = f"{self.folder}\\new_log\\"
+            else:
+                path = f"Log\\{self.station}"
+                os.makedirs(f"Log\\{self.station}")
+        except OSError:
+            pass
+        
+        log_file = f"{self.user}_{uuid.uuid4().hex}.json"
+
+        if self.config.smart_test:
+            open("log_exec_file.txt", "w")
+    
+        with open(f"{path}\\{log_file}", mode="w", encoding="utf-8") as json_file:
+            json_file.write(json_data)
+
+        print(f"Log file created successfully: {path}\\{log_file}")

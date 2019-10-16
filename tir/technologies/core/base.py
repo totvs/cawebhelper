@@ -24,6 +24,7 @@ from selenium.webdriver.firefox.options import Options as FirefoxOpt
 from selenium.webdriver.chrome.options import Options as ChromeOpt
 from selenium.common.exceptions import StaleElementReferenceException
 from selenium.common.exceptions import WebDriverException
+from datetime import datetime
 
 class Base(unittest.TestCase):
     """
@@ -77,6 +78,7 @@ class Base(unittest.TestCase):
         self.log = Log(folder=self.config.log_folder)
         self.log.station = socket.gethostname()
         self.log.user = os.getlogin()
+        self.log.hash_exec = self.log.date+datetime.now().strftime('%H%M%S%f')
 
         self.base_container = "body"
         self.errors = []
@@ -116,9 +118,9 @@ class Base(unittest.TestCase):
 
             msg = log_message
 
-            self.log.new_line(False, log_message)
+            self.log.generate_result(False, log_message)
         else:
-            self.log.new_line(True, "")
+            self.log.generate_result(True, "")
 
         self.log.save_file()
 

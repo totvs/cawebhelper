@@ -115,6 +115,8 @@ class WebappInternal(Base):
             self.config.language = self.get_language()
             self.language = LanguagePack(self.config.language)
 
+        self.log.webapp_version = self.get_webapp_version()
+
         if not self.config.skip_environment and not self.config.coverage:
             self.program_screen(initial_program)
 
@@ -513,6 +515,8 @@ class WebappInternal(Base):
 
         release_element = next(iter(filter(lambda x: x.text.startswith("Release"), labels)), None)
         database_element = next(iter(filter(lambda x: x.text.startswith("Top DataBase"), labels)), None)
+        lib_element = next(iter(filter(lambda x: x.text.startswith("Versão da lib"), labels)), None)
+        build_element = next(iter(filter(lambda x: x.text.startswith("Build"), labels)), None)
 
         if release_element:
             release = release_element.text.split(":")[1].strip()
@@ -521,6 +525,12 @@ class WebappInternal(Base):
 
         if database_element:
             self.log.database = database_element.text.split(":")[1].strip()
+
+        if build_element:
+            self.log.build_version = build_element.text.split(":")[1].strip()
+
+        if lib_element:
+            self.log.lib_version = lib_element.text.split(":")[1].strip()
 
         self.SetButton(self.language.close)
 
@@ -3906,8 +3916,7 @@ class WebappInternal(Base):
                 self.driver.save_screenshot(path)
 
         if new_log_line:
-            self.log.new_line(False, log_message)
-        self.log.save_file(routine_name)
+            self.log.generate_result(False, log_message)
         if not self.config.skip_restart and len(self.log.list_of_testcases()) > 1 and self.config.initial_program != '':
             self.restart()
         elif self.config.coverage and self.config.initial_program != '':
@@ -4224,9 +4233,9 @@ class WebappInternal(Base):
         """
         expected_assert = expected
         msg = "Passed"
-        stack_item = next(iter(list(map(lambda x: x.function, filter(lambda x: re.search('test_', x.function), inspect.stack())))), None)
-        test_number = f"{stack_item.split('_')[-1]} -" if stack_item else ""
-        log_message = f"{test_number}"
+        self.log.ct_method = next(iter(list(map(lambda x: x.function, filter(lambda x: re.search('test_', x.function), inspect.stack())))), None)
+        self.log.ct_number = ''.join(list(filter(str.isdigit, f"{self.log.ct_method.split('_')[-1]}"))) if self.log.ct_method else ""
+        log_message = f"{self.log.ct_number} - "
         self.log.set_seconds()
 
         if self.grid_input or self.grid_check:
@@ -4240,15 +4249,13 @@ class WebappInternal(Base):
 
             msg = log_message
 
-            self.log.new_line(False, log_message)
+            self.log.generate_result(False, log_message)
         else:
-            self.log.new_line(True, "")
+            self.log.generate_result(True, "")
 
         routine_name = self.config.routine if ">" not in self.config.routine else self.config.routine.split(">")[-1].strip()
 
         routine_name = routine_name if routine_name else "error"
-
-        self.log.save_file(routine_name)
 
         self.errors = []
         print(msg)
@@ -5045,3 +5052,16 @@ class WebappInternal(Base):
         element_selenium = self.soup_to_selenium(element)
         self.wait.until(EC.element_to_be_clickable((By.XPATH, xpath_soup(element))))
         element_selenium.click()
+
+    def get_webapp_version(self):
+        """
+        Returns a webapp version based on screen
+        """
+
+        soup = self.get_current_DOM()
+
+        div = soup.select("div")
+
+        div_filtered = next(iter(list(filter(lambda x: "versão" in x.text.lower(), div))), None)
+
+        return div_filtered.text.split(" ")[1]
