@@ -4250,10 +4250,6 @@ class WebappInternal(Base):
         else:
             self.log.generate_result(True, "")
 
-        routine_name = self.config.routine if ">" not in self.config.routine else self.config.routine.split(">")[-1].strip()
-
-        routine_name = routine_name if routine_name else "error"
-
         self.errors = []
         print(msg)
         if expected_assert:
