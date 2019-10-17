@@ -3890,9 +3890,6 @@ class WebappInternal(Base):
         """
         self.clear_grid()
 
-        routine_name = self.config.routine if ">" not in self.config.routine else self.config.routine.split(">")[-1].strip()
-        routine_name = routine_name if routine_name else "error"
-
         self.log.ct_method = self.log.get_testcase_stack()
         self.log.ct_number = ''.join(list(filter(str.isdigit, f"{self.log.ct_method.split('_')[-1]}"))) if self.log.ct_method else ""
         log_message = f"{self.log.ct_number} - "
@@ -3900,7 +3897,7 @@ class WebappInternal(Base):
 
         if self.config.screenshot:
 
-            log_file = f"{self.log.user}_{uuid.uuid4().hex}_{routine_name}-{test_number} error.png"
+            log_file = f"{self.log.user}_{uuid.uuid4().hex}_{self.log.ct_method}-{self.log.ct_number} error.png"
             
             try:
                 if self.config.log_folder:
