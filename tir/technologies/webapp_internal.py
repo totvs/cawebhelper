@@ -3893,9 +3893,9 @@ class WebappInternal(Base):
         routine_name = self.config.routine if ">" not in self.config.routine else self.config.routine.split(">")[-1].strip()
         routine_name = routine_name if routine_name else "error"
 
-        stack_item = self.log.get_testcase_stack()
-        test_number = f"{stack_item.split('_')[-1]} -" if stack_item else ""
-        log_message = f"{test_number} {message}"
+        self.log.ct_method = self.log.get_testcase_stack()
+        self.log.ct_number = ''.join(list(filter(str.isdigit, f"{self.log.ct_method.split('_')[-1]}"))) if self.log.ct_method else ""
+        log_message = f"{self.log.ct_number} - "
         self.log.set_seconds()
 
         if self.config.screenshot:
@@ -3904,8 +3904,8 @@ class WebappInternal(Base):
             
             try:
                 if self.config.log_folder:
-                    path = f"{self.log.folder}\\{self.log.station}\\{log_file}"
-                    os.makedirs(f"{self.log.folder}\\{self.log.station}")
+                    path = f"{self.log.folder}\\{log_file}"
+                    os.makedirs(f"{self.log.folder}\\")
                 else:
                     path = f"Log\\{self.log.station}\\{log_file}"
                     os.makedirs(f"Log\\{self.log.station}")
@@ -4233,7 +4233,7 @@ class WebappInternal(Base):
         """
         expected_assert = expected
         msg = "Passed"
-        self.log.ct_method = next(iter(list(map(lambda x: x.function, filter(lambda x: re.search('test_', x.function), inspect.stack())))), None)
+        self.log.ct_method = self.log.get_testcase_stack()
         self.log.ct_number = ''.join(list(filter(str.isdigit, f"{self.log.ct_method.split('_')[-1]}"))) if self.log.ct_method else ""
         log_message = f"{self.log.ct_number} - "
         self.log.set_seconds()
