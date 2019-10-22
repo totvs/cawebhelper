@@ -64,6 +64,7 @@ class LanguagePack:
         self.current_password = languagepack["CurrentPassword"]
         self.nem_password = languagepack["NewPassword"]
         self.confirm_new_password = languagepack["ConfirmNewPassword"]
+        self.assert_false_message = languagepack["AssertFalseMessage"]
 
         self.messages = Messages(languagepack)
     def get_language_pack(self, language):
@@ -135,7 +136,8 @@ class LanguagePack:
             "UserLogin": "Reserved",
             "CurrentPassword": "Reserved",
             "NewPassword": "Reserved",
-            "ConfirmNewPassword": "Reserved"
+            "ConfirmNewPassword": "Reserved",
+            "AssertFalseMessage": "AssertFalse method used without a checkpoint, check the script."
             
         }
 
@@ -206,7 +208,8 @@ class LanguagePack:
             "UserLogin": "Login do usuário",
             "CurrentPassword": "Senha atual",
             "NewPassword": "Nova senha",
-            "ConfirmNewPassword": "Confirmar nova senha"
+            "ConfirmNewPassword": "Confirmar nova senha",
+            "AssertFalseMessage": "Método AssertFalse utilizado sem um ponto de verificação, verifique o script."
             
         }
         spanish = {
@@ -276,7 +279,8 @@ class LanguagePack:
             "UserLogin": "Login del usuario*",
             "CurrentPassword": "Contrasena actual*",
             "NewPassword": "Nueva contrasena*",
-            "ConfirmNewPassword": "Confirmar nueva contrasena*"
+            "ConfirmNewPassword": "Confirmar nueva contrasena*",
+            "AssertFalseMessage": "Método AssertFalse utilizado sin un punto de control, verifique el script."
         }
         russian = {
             "User": "Пользователь",

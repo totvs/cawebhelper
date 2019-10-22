@@ -4246,9 +4246,10 @@ class WebappInternal(Base):
 
             msg = log_message
 
-            self.log.generate_result(False, log_message)
+        if expected:
+            self.log.new_line(True, "") if not self.errors else self.log.new_line(True, log_message)
         else:
-            self.log.generate_result(True, "")
+            self.log.new_line(False, self.language.assert_false_message) if not self.errors else self.log.new_line(False, log_message)
 
         self.errors = []
         print(msg)
