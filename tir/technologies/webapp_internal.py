@@ -115,7 +115,7 @@ class WebappInternal(Base):
             self.config.language = self.get_language()
             self.language = LanguagePack(self.config.language)
 
-        self.log.webapp_version = self.get_webapp_version()
+        # self.log.webapp_version = self.get_webapp_version()
 
         if not self.config.skip_environment and not self.config.coverage:
             self.program_screen(initial_program)
