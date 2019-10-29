@@ -108,25 +108,20 @@ class Log:
         """
         return next(iter(list(map(lambda x: x.function, filter(lambda x: re.search('setUpClass', x.function) or re.search('test_', x.function), inspect.stack())))), None)
 
-    def get_testsuite_name(self):
+    def get_file_name(self, file_name):
         """
         Returns a Testsuite name
         """
-        testsuite_stack = next(iter(list(filter(lambda x: "testsuite" in x.filename.lower(), inspect.stack()))),None)
+        testsuite_stack = next(iter(list(filter(lambda x: file_name in x.filename.lower(), inspect.stack()))),None)
         
         if testsuite_stack:
-            return testsuite_stack.filename.split("\\")[-1].split(".")[0]
-        else:
-            return ""
 
-    def get_testcase_name(self):
-        """
-        Returns a Testcase name
-        """
-        testcase_stack = next(iter(list(filter(lambda x: "testcase" in x.filename.lower(), inspect.stack()))),None)
+            if '/' in testsuite_stack.filename:
+                split_character = '/'
+            else:
+                split_character = '\\'
 
-        if testcase_stack:
-            return testcase_stack.filename.split("\\")[-1].split(".")[0]
+            return testsuite_stack.filename.split(split_character)[-1].split(".")[0]
         else:
             return ""
 
@@ -162,8 +157,8 @@ class Log:
             "SECONDS":str(self.seconds),
             "SOTYPE":self.so_type,
             "SOVERSION":self.so_version,
-            "TESTCASE":self.get_testcase_name(),
-            "TESTSUITE":self.get_testsuite_name(),
+            "TESTCASE":self.get_file_name('testcase'),
+            "TESTSUITE":self.get_file_name('testsuite'),
             "TESTTYPE":"1",
             "TOKEN":"",
             "USER":self.user,
