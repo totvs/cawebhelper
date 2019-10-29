@@ -230,7 +230,7 @@ class Log:
 
         try:
             if self.folder:
-                path = f"{self.folder}\\{self.station}_v6"
+                path = f"{self.folder}\\new_log\\{self.station}"
                 os.makedirs(path)
             else:
                 path = f"Log\\{self.station}"
