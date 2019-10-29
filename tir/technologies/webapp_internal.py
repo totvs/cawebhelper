@@ -3892,7 +3892,7 @@ class WebappInternal(Base):
 
         self.log.ct_method = self.log.get_testcase_stack()
         self.log.ct_number = ''.join(list(filter(str.isdigit, f"{self.log.ct_method.split('_')[-1]}"))) if self.log.ct_method else ""
-        log_message = f"{self.log.ct_number} - "
+        log_message = f"{self.log.ct_number} - {message}"
         self.log.set_seconds()
 
         if self.config.screenshot:
@@ -4247,9 +4247,9 @@ class WebappInternal(Base):
             msg = log_message
 
         if expected:
-            self.log.new_line(True, "") if not self.errors else self.log.new_line(True, log_message)
+            self.log.generate_result(True, "") if not self.errors else self.log.generate_result(True, log_message)
         else:
-            self.log.new_line(False, self.language.assert_false_message) if not self.errors else self.log.new_line(False, log_message)
+            self.log.generate_result(False, self.language.assert_false_message) if not self.errors else self.log.generate_result(False, log_message)
 
         self.errors = []
         print(msg)

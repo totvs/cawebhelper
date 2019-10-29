@@ -179,13 +179,9 @@ class Log:
         server_address1 = "http://10.171.78.41:8006/rest/LOGEXEC/"
         server_address2 = "http://10.171.78.43:8204/rest/LOGEXEC/"
 
-        status = None
-
         success = False
 
         data = dictionary
-
-        print(data['HASHEXEC'])
 
         json_data = json.dumps(data)
 
@@ -208,15 +204,22 @@ class Log:
         Send a post request to server
         """
         success = False
+        response = None
 
-        response = requests.post(server_address.strip(), data=json_data)
+        try:
+            response = requests.post(server_address.strip(), data=json_data)
+        except:
+            pass
 
-        if response.status_code == 200:
-            print("Log de execucao enviado com sucesso!")
-            success = True
-        elif response.status_code == 201 or response.status_code == 204:
-            print("Log de execucao enviado com sucesso!")
-            success = True
+        if response:
+            if response.status_code == 200:
+                print("Log de execucao enviado com sucesso!")
+                success = True
+            elif response.status_code == 201 or response.status_code == 204:
+                print("Log de execucao enviado com sucesso!")
+                success = True
+        else:
+            return False
 
         return success
 
@@ -232,10 +235,11 @@ class Log:
 
         try:
             if self.folder:
-                path = f"{self.folder}\\new_log\\"
+                path = f"{self.folder}\\{self.station}_v6"
+                os.makedirs(path)
             else:
                 path = f"Log\\{self.station}"
-                os.makedirs(f"Log\\{self.station}")
+                os.makedirs(path)
         except OSError:
             pass
         
