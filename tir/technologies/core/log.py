@@ -53,7 +53,7 @@ class Log:
         self.lib_version = ""
         self.webapp_version = ""
         self.date = today.strftime('%Y%m%d')
-        self.hour = time.strftime('%H:%M:%S')
+        self.hour = ""
         self.hash_exec = ""
 
     def generate_result(self, result, message):
@@ -174,6 +174,9 @@ class Log:
         server_address1 = "http://10.171.78.41:8006/rest/LOGEXEC/"
         server_address2 = "http://10.171.78.43:8204/rest/LOGEXEC/"
 
+        # server_address1 = ""
+        # server_address2 = ""
+
         success = False
 
         data = dictionary
@@ -203,6 +206,19 @@ class Log:
 
         try:
             response = requests.post(server_address.strip(), data=json_data)
+        except:
+            pass
+
+        try:
+            path = f"{self.folder}\\new_log\\{self.station}"
+            os.makedirs(path)
+        except OSError:
+            pass
+        
+        try:
+            with open(f"{path}\\response_log.csv", mode="a", encoding="utf-8", newline='') as response_log:
+                csv_write = csv.writer(response_log, delimiter=';', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+                csv_write.writerow([f"URL: {server_address}", f"CT: {json.loads(json_data)['CTMETHOD']}", f"Status Code: {response.text}"])
         except:
             pass
 
