@@ -218,7 +218,7 @@ class Log:
         try:
             with open(f"{path}\\response_log.csv", mode="a", encoding="utf-8", newline='') as response_log:
                 csv_write = csv.writer(response_log, delimiter=';', quotechar='"', quoting=csv.QUOTE_MINIMAL)
-                csv_write.writerow([f"URL: {server_address}", f"CT: {json.loads(json_data)['CTMETHOD']}", f"Status Code: {response.text}"])
+                csv_write.writerow([f"URL: {server_address}", f"CT: {json.loads(json_data)['CTMETHOD']}", {f"Status Code: {response.status_code}"}, f"Message: {response.text}"])
         except:
             pass
 
