@@ -4250,7 +4250,7 @@ class WebappInternal(Base):
             self.assertTrue(expected, msg)
         else:
             self.log.generate_result(False, self.language.assert_false_message) if not self.errors else self.log.generate_result(False, log_message)
-            self.assertFalse(expected, msg)
+            self.assertTrue(expected, msg)
 
         self.errors = []
         print(msg)
