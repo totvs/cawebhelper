@@ -4228,7 +4228,6 @@ class WebappInternal(Base):
         >>> #Calling the method:
         >>> self.assert_result(True)
         """
-        expected_assert = expected
         msg = "Passed"
         self.log.ct_method = self.log.get_testcase_stack()
         self.log.ct_number = ''.join(list(filter(str.isdigit, f"{self.log.ct_method.split('_')[-1]}"))) if self.log.ct_method else ""
@@ -4248,16 +4247,13 @@ class WebappInternal(Base):
 
         if expected:
             self.log.generate_result(True, "") if not self.errors else self.log.generate_result(True, log_message)
+            self.assertTrue(expected, msg)
         else:
             self.log.generate_result(False, self.language.assert_false_message) if not self.errors else self.log.generate_result(False, log_message)
+            self.assertFalse(expected, msg)
 
         self.errors = []
         print(msg)
-        if expected_assert:
-            self.assertTrue(expected, msg)
-        else:
-            self.assertFalse(expected, msg)
-
     
     def ClickCheckBox(self, label_box_name, position=1):
         """
