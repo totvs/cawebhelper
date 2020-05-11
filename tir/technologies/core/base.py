@@ -956,7 +956,7 @@ class Base(unittest.TestCase):
             options.binary_location = self.config.electron_binary_path
             self.driver = webdriver.Chrome(chrome_options=options, executable_path=driver_path)
 
-        if not self.config.browser.lower() == "electron":
+        if not self.config.browser.lower() == "electron" and sys.platform != 'linux':
             if self.config.headless:
                 self.driver.set_window_size(size()[0], size()[1])
             else:
