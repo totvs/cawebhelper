@@ -845,6 +845,8 @@ class WebappInternal(Base):
             if self.config.initial_program.lower() == 'sigaadv':
                 self.close_coin_screen_after_routine()
 
+            self.SetButton("Fechar")
+
         except AssertionError as error:
             print(f"Warning set program raise AssertionError: {str(error)}")
             raise error
