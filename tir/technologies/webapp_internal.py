@@ -845,9 +845,6 @@ class WebappInternal(Base):
             if self.config.initial_program.lower() == 'sigaadv':
                 self.close_coin_screen_after_routine()
 
-            button = self.web_scrap(term="Fechar", scrap_type=enum.ScrapType.MIXED, optional_term="button, .thbutton", main_container = "body", check_error=check_error)
-            self.soup_to_selenium(button).click()
-
             self.wait_element_timeout(term="Fechar", scrap_type=enum.ScrapType.MIXED, optional_term="button", timeout=10, step=0.1)
             button = self.web_scrap(term="Fechar", scrap_type=enum.ScrapType.MIXED, optional_term="button, .thbutton", main_container = "body")
             self.soup_to_selenium(button[0]).click()
