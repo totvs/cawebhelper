@@ -845,7 +845,9 @@ class WebappInternal(Base):
             if self.config.initial_program.lower() == 'sigaadv':
                 self.close_coin_screen_after_routine()
 
-            self.SetButton("Fechar")
+            button = self.web_scrap(term="Fechar", scrap_type=enum.ScrapType.MIXED, optional_term="button, .thbutton", main_container = "body", check_error=check_error)
+            self.soup_to_selenium(button).click()
+
 
         except AssertionError as error:
             print(f"Warning set program raise AssertionError: {str(error)}")
