@@ -1,7 +1,9 @@
 from tir.technologies.webapp_internal import WebappInternal
 from tir.technologies.apw_internal import ApwInternal
+from tir.technologies.mobile_internal import MobileInternal
 from tir.technologies.core.config import ConfigLoader
 from tir.technologies.core.base_database import BaseDatabase
+
 """
 This file must contain the definition of all User Classes.
 
@@ -1210,3 +1212,61 @@ class Apw():
 
     def WaitModal(self, text, opcao="title"):
         self.__Apw.WaitModal(text, opcao)
+
+
+class Mobile():
+
+    def __init__(self, config_path=""):
+        self.__Mobile = MobileInternal()
+
+    def Setup(self):
+        self.__Mobile.Setup()
+
+    def User_screen(self, show_password=False):
+        self.__Mobile.User_screen(show_password)
+    
+    def SetButton(self, term, sub_item=""):
+        self.__Mobile.SetButton(term, sub_item)
+    
+    def ClickFolder(self, term):
+        self.__Mobile.ClickFolder(term)
+
+    def Checkbox(self, term):
+        self.__Mobile.Checkbox(term)
+
+    def RadioButton(self, term):
+        self.__Mobile.RadioButton(term)
+
+    def Settings(self, term):
+        self.__Mobile.Settings(term)
+
+    def SetValue(self, term, value):
+        self.__Mobile.SetValue(term, value)
+
+    def CheckResult(self, term, value):
+        self.__Mobile.CheckResult(term, value)
+
+    def AssertTrue(self):
+        """
+        Defines that the test case expects a True response to pass
+
+        Usage:
+
+        >>> #Instantiating the class
+        >>> inst.oHelper = Webapp()
+        >>> #Calling the method
+        >>> inst.oHelper.AssertTrue()
+        """
+        self.__Mobile.AssertTrue()
+
+    def TearDown(self):
+        """
+        Closes the webdriver and ends the test case.
+
+        Usage:
+
+        >>> #Calling the method
+        >>> inst.oHelper.TearDown()
+        """
+        self.__Mobile.TearDown()
+    
