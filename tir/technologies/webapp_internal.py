@@ -788,7 +788,7 @@ class WebappInternal(Base):
         if lib_element:
             self.log.lib_version = lib_element.text.split(":")[1].strip()
 
-        self.SetButton(self.language.close)
+        self.SetButton(self.language.close, ratio=4.0)
 
     def set_log_info_tss(self):
 
@@ -903,7 +903,7 @@ class WebappInternal(Base):
                 self.set_element_focus(s_tget_img())
                 self.wait_until_to( expected_condition = "element_to_be_clickable", element = tget_input, locator = By.XPATH )
                 self.wait_until_to( expected_condition = "element_to_be_clickable", element = tget_img, locator = By.XPATH )
-                self.send_action(self.click, s_tget_img)
+                self.send_action(self.click, s_tget_img, ratio=9.0)
                 self.wait_element_is_not_displayed(tget_img)
 
             if self.config.initial_program.lower() == 'sigaadv':
@@ -1693,14 +1693,14 @@ class WebappInternal(Base):
                         current_value = self.get_web_value(input_field()).strip()
                     #Action for Input elements
                     else:
-                        self.wait_until_to( expected_condition = "visibility_of", element = input_field )
-                        self.wait_until_to( expected_condition = "element_to_be_clickable", element = element, locator = By.XPATH )
+                        self.wait_until_to( expected_condition = "visibility_of", element = input_field, timeout=True)
+                        self.wait_until_to( expected_condition = "element_to_be_clickable", element = element, locator = By.XPATH, timeout=True)
                         self.double_click(input_field())
 
                         #if Character input
                         if valtype != 'N':
                             self.set_element_focus(input_field())
-                            self.wait_until_to( expected_condition = "element_to_be_clickable", element = element, locator = By.XPATH )
+                            self.wait_until_to( expected_condition = "element_to_be_clickable", element = element, locator = By.XPATH, timeout=True)
                             self.send_keys(input_field(), Keys.HOME)
                             ActionChains(self.driver).key_down(Keys.SHIFT).send_keys(Keys.END).key_up(Keys.SHIFT).perform()
                             time.sleep(0.1)
@@ -1708,7 +1708,7 @@ class WebappInternal(Base):
                                 ActionChains(self.driver).move_to_element(input_field()).send_keys_to_element(input_field(), " ").perform()
                             else:
                                 self.wait_blocker()
-                                self.wait_until_to( expected_condition = "element_to_be_clickable", element = element, locator = By.XPATH )
+                                self.wait_until_to( expected_condition = "element_to_be_clickable", element = element, locator = By.XPATH, timeout=True)
                                 ActionChains(self.driver).move_to_element(input_field()).send_keys_to_element(input_field(), main_value).perform()
                         #if Number input
                         else:
@@ -2568,7 +2568,7 @@ class WebappInternal(Base):
         
 
 
-    def SetButton(self, button, sub_item="", position=1, check_error=True):
+    def SetButton(self, button, sub_item="", position=1, check_error=True, ratio=4.0):
         """
         Method that clicks on a button on the screen.
 
@@ -2590,6 +2590,7 @@ class WebappInternal(Base):
         >>> # Calling the method to click on a sub item inside a button, this form is an alternative.
         >>> oHelper.SetButton("Other Actions", "Process, Process_02, Process_03") 
         """
+
         self.wait_blocker()
         container = self.get_current_container()
 
@@ -2653,7 +2654,7 @@ class WebappInternal(Base):
                 self.scroll_to_element(soup_element())
                 self.set_element_focus(soup_element())
                 self.wait_until_to( expected_condition = "element_to_be_clickable", element = soup_objects[position], locator = By.XPATH )
-                self.send_action(self.click, soup_element)
+                self.send_action(self.click, soup_element, ratio=ratio)
                 self.wait_element_is_not_focused(soup_element)
 
             if sub_item and ',' not in sub_item:
@@ -6661,7 +6662,7 @@ class WebappInternal(Base):
         else:
             self.log_error("Doesn't contain that key in json object")
 
-    def send_action(self, action = None, element = None, value = None, right_click=False):
+    def send_action(self, action = None, element = None, value = None, right_click=False, ratio=None):
         """
 
         Sends an action to element and compare it object state change.
@@ -6679,15 +6680,20 @@ class WebappInternal(Base):
 
         soup_select = None
 
+        success = False
+
+        container_id = self.container_id()
+
+        counter = 1
+
         endtime = time.time() + self.config.time_out
         try:
-            while ((time.time() < endtime) and (soup_before_event == soup_after_event)):
+            while ((time.time() < endtime) and not success):
 
                 if right_click:
                     soup_select = self.get_soup_select(".tmenupopupitem")
                     if not soup_select:
                         action(element(), right_click=right_click)
-                        self.wait_blocker()
                 elif value:
                     action(element(), value)
                 elif element:
@@ -6696,6 +6702,8 @@ class WebappInternal(Base):
                 elif action:
                     action()
 
+                self.wait_blocker()
+
                 if soup_select:
                     soup_after_event = soup_select
                 elif soup_select == []:
@@ -6703,7 +6711,25 @@ class WebappInternal(Base):
                 else:
                     soup_after_event = self.get_current_DOM()
 
-                time.sleep(1)
+                if ratio:
+
+                    if counter == 3:
+                        self.search_for_errors()
+
+                    current_ratio, success = self.soup_compare_ratio(soup_before_event, soup_after_event, ratio)
+                    print(f"Current Ratio: {round(current_ratio, 2)}% - Target Ratio: {ratio}%")
+                    if soup_before_event != soup_after_event and not success:
+                        if container_id and (self.container_id() == container_id) and counter == 3:
+                            current_ratio, success = self.soup_compare_ratio(soup_before_event, soup_after_event, ratio=0.015)
+                            print(f"Current Ratio: {round(current_ratio, 2)}% - Target Ratio: 0.015%")
+
+                        counter += 1
+
+                        if counter > 3:
+                            counter = 1
+
+                elif soup_before_event != soup_after_event:
+                    success = True
 
         except Exception as e:
             if self.config.smart_test or self.config.debug_log:
@@ -6735,3 +6761,31 @@ class WebappInternal(Base):
         if m:
             self.driver.close()
             self.assertTrue(False, f'Current "MotExec" are using a reserved word: "{m.group(0)}", please check "config.json" key and execute again.')
+
+    def soup_compare_ratio(self, soup_before=None, soup_after=None, ratio=9.0):
+        """
+
+        :return:
+        """
+        from difflib import SequenceMatcher
+
+        m = SequenceMatcher(None, str(soup_before), str(soup_after))
+
+        current_ratio = m.quick_ratio()
+
+        current_ratio_convert = (current_ratio * 100 - 100) * -1
+
+        return current_ratio_convert, (current_ratio_convert >= ratio)
+
+    def container_id(self):
+        """
+
+        :return:
+        """
+
+        container = self.get_current_container()
+
+        if container  and 'id' in container.attrs:
+            return container.attrs['id']
+        else:
+            return []
