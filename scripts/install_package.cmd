@@ -13,5 +13,5 @@ taskkill /f /im chromedriver.exe
 echo -------------------------
 echo Installing project...
 echo -------------------------
-pip install -U dist/tir_framework-1.17.31.tar.gz
+pip install -U dist/tir_framework-1.17.32.tar.gz
 pause >nul | set/p = Press any key to exit ...

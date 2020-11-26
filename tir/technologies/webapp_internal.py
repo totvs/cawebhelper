@@ -22,6 +22,7 @@ from tir.technologies.core.base import Base
 from tir.technologies.core.numexec import NumExec
 from math import sqrt, pow
 from selenium.common.exceptions import *
+from difflib import SequenceMatcher
 
 class WebappInternal(Base):
     """
@@ -2568,7 +2569,7 @@ class WebappInternal(Base):
         
 
 
-    def SetButton(self, button, sub_item="", position=1, check_error=True, ratio=4.0):
+    def SetButton(self, button, sub_item="", position=1, check_error=True, ratio=2.0):
         """
         Method that clicks on a button on the screen.
 
@@ -6687,49 +6688,47 @@ class WebappInternal(Base):
         counter = 1
 
         endtime = time.time() + self.config.time_out
+
         try:
-            while ((time.time() < endtime) and not success):
 
-                if right_click:
-                    soup_select = self.get_soup_select(".tmenupopupitem")
-                    if not soup_select:
-                        action(element(), right_click=right_click)
-                elif value:
-                    action(element(), value)
-                elif element:
-                    self.set_element_focus(element())
-                    action(element())
-                elif action:
-                    action()
+            while ((time.time() < endtime and not success)):
 
+                print("CLICK SEND_ACTION!!!")
+                
                 self.wait_blocker()
 
-                if soup_select:
-                    soup_after_event = soup_select
-                elif soup_select == []:
-                    soup_after_event = soup_before_event
-                else:
-                    soup_after_event = self.get_current_DOM()
+                self.send_action_click(action, element, value, right_click)
 
-                if ratio:
+                timeout_tries = time.time() + self.config.time_out / 2
 
-                    if counter == 3:
-                        self.search_for_errors()
+                while ((time.time() < timeout_tries and not success)):
 
-                    current_ratio, success = self.soup_compare_ratio(soup_before_event, soup_after_event, ratio)
-                    print(f"Current Ratio: {round(current_ratio, 2)}% - Target Ratio: {ratio}%")
-                    if soup_before_event != soup_after_event and not success:
-                        if container_id and (self.container_id() == container_id) and counter == 3:
-                            current_ratio, success = self.soup_compare_ratio(soup_before_event, soup_after_event, ratio=0.015)
-                            print(f"Current Ratio: {round(current_ratio, 2)}% - Target Ratio: 0.015%")
+                    if soup_select:
+                        soup_after_event = soup_select
+                    elif soup_select == []:
+                        soup_after_event = soup_before_event
+                    else:
+                        soup_after_event = self.get_current_DOM()
+
+                    if ratio:
+
+                        if counter == 3:
+                            self.search_for_errors()
+
+                        current_ratio, success = self.soup_compare_ratio(soup_before_event, soup_after_event, ratio)
+                        print(f"Current Ratio: {round(current_ratio, 2)}% - Target Ratio: {ratio}%")
+                        if soup_before_event != soup_after_event and not success:
+                            if container_id and (self.container_id() == container_id) and counter == 3:
+                                current_ratio, success = self.soup_compare_ratio(soup_before_event, soup_after_event, ratio=0.004)
+                                print(f"Current Ratio: {current_ratio}% - Target Ratio: 0.004%")
 
                         counter += 1
 
                         if counter > 3:
                             counter = 1
 
-                elif soup_before_event != soup_after_event:
-                    success = True
+                    elif soup_before_event != soup_after_event:
+                        success = True
 
         except Exception as e:
             if self.config.smart_test or self.config.debug_log:
@@ -6767,7 +6766,6 @@ class WebappInternal(Base):
 
         :return:
         """
-        from difflib import SequenceMatcher
 
         m = SequenceMatcher(None, str(soup_before), str(soup_after))
 
@@ -6789,3 +6787,25 @@ class WebappInternal(Base):
             return container.attrs['id']
         else:
             return []
+
+    def send_action_click(self, action, element, value, right_click):
+        """
+
+        :param action:
+        :param element:
+        :param value:
+        :param right_click:
+        :return:
+        """
+
+        if right_click:
+            soup_select = self.get_soup_select(".tmenupopupitem")
+            if not soup_select:
+                action(element(), right_click=right_click)
+        elif value:
+            action(element(), value)
+        elif element:
+            self.set_element_focus(element())
+            action(element())
+        elif action:
+            action()
