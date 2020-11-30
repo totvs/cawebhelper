@@ -2655,7 +2655,7 @@ class WebappInternal(Base):
                 self.scroll_to_element(soup_element())
                 self.set_element_focus(soup_element())
                 self.wait_until_to( expected_condition = "element_to_be_clickable", element = soup_objects[position], locator = By.XPATH )
-                self.send_action(self.click, soup_element, ratio=ratio)
+                self.send_action(self.click, soup_element, ratio=ratio, check_error=check_error)
                 self.wait_element_is_not_focused(soup_element)
 
             if sub_item and ',' not in sub_item:
@@ -6663,7 +6663,7 @@ class WebappInternal(Base):
         else:
             self.log_error("Doesn't contain that key in json object")
 
-    def send_action(self, action = None, element = None, value = None, right_click=False, ratio=None):
+    def send_action(self, action = None, element = None, value = None, right_click=False, ratio=None, check_error=False):
         """
 
         Sends an action to element and compare it object state change.
@@ -6674,6 +6674,8 @@ class WebappInternal(Base):
         :param right_click: True if you want a right click
         :return: True if there was a change in the object
         """
+
+        self.wait_blocker()
 
         soup_before_event = self.get_current_DOM()
 
@@ -6694,10 +6696,10 @@ class WebappInternal(Base):
             while ((time.time() < endtime and not success)):
 
                 print("CLICK SEND_ACTION!!!")
-                
-                self.wait_blocker()
 
                 self.send_action_click(action, element, value, right_click)
+
+                self.wait_blocker()
 
                 timeout_tries = time.time() + self.config.time_out / 2
 
@@ -6710,17 +6712,22 @@ class WebappInternal(Base):
                     else:
                         soup_after_event = self.get_current_DOM()
 
+                    # PILOTO Comparação de strings através do ratio
                     if ratio:
 
-                        if counter == 3:
-                            self.search_for_errors()
-
                         current_ratio, success = self.soup_compare_ratio(soup_before_event, soup_after_event, ratio)
-                        print(f"Current Ratio: {round(current_ratio, 2)}% - Target Ratio: {ratio}%")
+                        print(f"Current Ratio: {current_ratio}% - Target Ratio: {ratio}%")
                         if soup_before_event != soup_after_event and not success:
-                            if container_id and (self.container_id() == container_id) and counter == 3:
-                                current_ratio, success = self.soup_compare_ratio(soup_before_event, soup_after_event, ratio=0.004)
-                                print(f"Current Ratio: {current_ratio}% - Target Ratio: 0.004%")
+                            if counter == 3:
+                                if container_id and (self.container_id() == container_id):
+                                    current_ratio, success = self.soup_compare_ratio(soup_before_event, soup_after_event, ratio=0.002)#TODO ratio muito baixo pode gerar resultados insatisfatórios
+                                    if current_ratio < 0.002 and not success:
+                                        print("MAX PRECISION")
+                                        current_ratio, success = self.soup_compare_ratio(soup_before_event, soup_after_event, ratio=0.002, max_precision=True)#TODO ratio muito baixo pode gerar resultado insatisfatórios
+                                    print(f"Current Ratio: {current_ratio}% - Target Ratio: 0.002%")
+                                else:
+                                    print("RATIO 1.6")
+                                    current_ratio, success = self.soup_compare_ratio(soup_before_event, soup_after_event, ratio=1.0)
 
                         counter += 1
 
@@ -6761,7 +6768,7 @@ class WebappInternal(Base):
             self.driver.close()
             self.assertTrue(False, f'Current "MotExec" are using a reserved word: "{m.group(0)}", please check "config.json" key and execute again.')
 
-    def soup_compare_ratio(self, soup_before=None, soup_after=None, ratio=9.0):
+    def soup_compare_ratio(self, soup_before=None, soup_after=None, ratio=9.0, max_precision=False):
         """
 
         :return:
@@ -6769,9 +6776,12 @@ class WebappInternal(Base):
 
         m = SequenceMatcher(None, str(soup_before), str(soup_after))
 
-        current_ratio = m.quick_ratio()
+        if max_precision:
+            current_ratio = m.ratio()
+        else:
+            current_ratio = m.quick_ratio()
 
-        current_ratio_convert = (current_ratio * 100 - 100) * -1
+        current_ratio_convert = (100 - current_ratio * 100)
 
         return current_ratio_convert, (current_ratio_convert >= ratio)
 
