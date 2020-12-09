@@ -1,3 +1,4 @@
+import sys, os
 from tir.technologies.webapp_internal import WebappInternal
 from tir.technologies.apw_internal import ApwInternal
 from tir.technologies.core.config import ConfigLoader
@@ -20,7 +21,11 @@ class Webapp():
     def __init__(self, config_path="", autostart=True):
         self.__webapp = WebappInternal(config_path, autostart)
         self.__database = BaseDatabase()
-        self.config = ConfigLoader()
+
+        if config_path == "":
+            config_path = os.path.join(sys.path[0], r"config.json")
+
+        self.config = ConfigLoader(config_path)
         self.coverage = self.config.coverage
 
     def AddParameter(self, parameter, branch, portuguese_value="", english_value="", spanish_value=""):

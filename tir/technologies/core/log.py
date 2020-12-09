@@ -1,5 +1,6 @@
 import time
 import os
+import sys
 import numpy as nump
 import pandas as panda
 import uuid
@@ -26,7 +27,10 @@ class Log:
 
         today = datetime.today()
 
-        self.config = ConfigLoader()
+        if config_path == "":
+            config_path = os.path.join(sys.path[0], r"config.json")
+            
+        self.config = ConfigLoader(config_path)
         self.user = user
         self.station = station
         self.program = program
