@@ -26,11 +26,8 @@ class Log:
         self.timestamp = time.strftime("%Y%m%d%H%M%S")
 
         today = datetime.today()
-
-        if config_path == "":
-            config_path = os.path.join(sys.path[0], r"config.json")
-            
-        self.config = ConfigLoader(config_path)
+         
+        self.config = ConfigLoader(os.path.join(sys.path[0], r"config.json"))
         self.user = user
         self.station = station
         self.program = program
