@@ -22,6 +22,7 @@ from tir.technologies.core.base import Base
 from tir.technologies.core.numexec import NumExec
 from math import sqrt, pow
 from selenium.common.exceptions import *
+from pathlib import Path
 
 class WebappInternal(Base):
     """
@@ -4545,7 +4546,7 @@ class WebappInternal(Base):
         regex = self.generate_regex_by_prefixes(prefixes)
 
         #caminho do arquivo csv(SX3)
-        path = os.path.join(os.path.dirname(__file__), r'core\\data\\sx3.csv')
+        path = os.path.join(os.path.dirname(__file__), 'core','data', 'sx3.csv')
 
         #DataFrame para filtrar somente os dados da tabela informada pelo usuário oriundo do csv.
         data = pd.read_csv(path, sep=';', encoding='latin-1', header=None, error_bad_lines=False,
