@@ -4407,7 +4407,8 @@ class WebappInternal(Base):
                 grids = self.filter_displayed_elements(container.select(".tgetdados, .tgrid, .tcbrowse"))
 
                 if grids:
-                    grids = self.filter_non_obscured(grids, grid_number)
+                    if len(grids) > 1:
+                        grids = self.filter_non_obscured(grids, grid_number)
                     grids = list(filter(lambda x:x.select("tbody tr"), grids))      
                     headers = self.get_headers_from_grids(grids)
                     if grid_number < len(grids):
@@ -4464,7 +4465,7 @@ class WebappInternal(Base):
     def check_obscured_element(self, element, x, y):
 
         element_front = self.driver.execute_script("return document.elementFromPoint(arguments[0], arguments[1])", x, y)
-        return element == element_front
+        return element.text == element_front.text
 
 
     def ClickGridHeader( self, column = 1, column_name = '', grid_number = 1):
