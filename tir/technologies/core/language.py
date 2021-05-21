@@ -145,7 +145,8 @@ class LanguagePack:
             "AssertFalseMessage": "AssertFalse method used without a checkpoint, check the script.",
             "File Name": "File Name",
 			"Open": "Open",
-            "Warning": "Warning" 
+            "Warning": "Warning",
+            "Result does not match expected": ""
         }
 
         brazilian_portuguese = {
@@ -220,7 +221,8 @@ class LanguagePack:
             "AssertFalseMessage": "Método AssertFalse utilizado sem um ponto de verificação, verifique o script.",
             "File Name": "Nome do Arquivo:",
 			"Open": "Abrir",
-            "Warning": "Atenção"
+            "Warning": "Atenção",
+            "Result does not match expected": "Resultado não confere com o esperado"
         }
         spanish = {
             "User": "Usuário",
@@ -294,7 +296,8 @@ class LanguagePack:
             "AssertFalseMessage": "Método AssertFalse utilizado sin un punto de control, verifique el script.",
             "File Name": "Nombre del archivo:",
 			"Open": "Abierto",
-            "Warning": "Aviso"
+            "Warning": "Aviso",
+            "Result does not match expected": ""
         }
         russian = {
             "User": "Пользователь",
@@ -371,7 +374,8 @@ class LanguagePack:
             "ConfirmNewPassword": "Подтв. новый пароль*",
             "File Name": "имя файла",
 			"Open": "открыто",
-            "Warning": "Берегись"
+            "Warning": "Берегись",
+            "Result does not match expected": ""
         }
 
         if language.lower() == "en-us":
@@ -399,3 +403,4 @@ class Messages():
         self.text_not_found = languagepack["Text Not Found"]
         self.user_not_authenticated = languagepack["User Not Authenticated"]
         self.help_not_found = languagepack["Help Not Found"]
+        self.assert_fail_message = languagepack["Result does not match expected"]

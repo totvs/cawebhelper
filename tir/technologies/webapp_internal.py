@@ -5796,6 +5796,10 @@ class WebappInternal(Base):
         >>> #Calling the method:
         >>> self.assert_result(True)
         """
+        
+        if not script_message:
+            script_message = self.language.messages.assert_fail_message
+            
         assert_false = self.search_stack('AssertFalse')
         self.expected = expected
         log_message = f"{self.log.ident_test()[1]} - "
