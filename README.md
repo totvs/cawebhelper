@@ -1,6 +1,6 @@
 # TIR - Totvs Interface Robot
 
-TIR is a Python module used to create test scripts for web interfaces. With it, you can easily create and execute test suites and test cases for any supported Totvs' web interface systems, such as Protheus Webapp.
+TIR is a Python module used to create test scripts for web interfaces. With it, you are able to easily create and execute test suites and test cases for any supported Totvs' web interface systems, such as Protheus Webapp.
 
 ### Current Supported Technologies
 
@@ -44,7 +44,7 @@ pip install tir_framework --upgrade
 
 ### 2. via Terminal(Deprecated For The Branch Master)
 
-You can install TIR via terminal. Make sure your Python and Git are installed and run this command:
+You can install TIR via terminal. Make sure your Python and Git is installed and run this command:
 
 ```shell
 pip install git+https://github.com/totvs/tir.git --upgrade
@@ -74,7 +74,7 @@ test_helper = Webapp("C:\PATH_HERE\config.json")
 
 ## Usage
 
-After the module is installed, you could just import it into your Test Case.
+After the module is installed, you could just import it on your Test Case.
 See the following **Protheus WebApp Class** example:
 ```python
 # Import from our package the class you're going to use
@@ -102,6 +102,6 @@ We have a repository with different samples of TIR scripts:
 
 ## Contributing
 
-To contribute be sure to follow the [Contribution](CONTRIBUTING.md) guidelines.
+In order to contribute be sure to follow the [Contribution](CONTRIBUTING.md) guidelines.
 
-Also, it's important to understand the chosen [architecture](https://github.com/totvs/tir/blob/master/doc_files/ARCHITECTURE.md).
+Also, it's import to understand the chosen [architecture](https://github.com/totvs/tir/blob/master/doc_files/ARCHITECTURE.md).

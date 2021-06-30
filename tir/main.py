@@ -19,7 +19,7 @@ class Webapp():
     """
     def __init__(self, config_path="", autostart=True):
         self.__webapp = WebappInternal(config_path, autostart)
-        self.__database = BaseDatabase(config_path, autostart=False)
+        self.__database = BaseDatabase()
         self.config = ConfigLoader()
         self.coverage = self.config.coverage
 
@@ -708,7 +708,7 @@ class Webapp():
         """
         self.__webapp.SetTabEDAPP(table_name)
 
-    def SetValue(self, field, value, grid=False, grid_number=1, ignore_case=True, row=None, name_attr=False, position = 1, check_value=None):
+    def SetValue(self, field, value, grid=False, grid_number=1, ignore_case=True, row=None, name_attr=False, position = 1, check_value=True):
         """
         Sets value of an input element.
 
@@ -1080,12 +1080,6 @@ class Webapp():
         Returns a dictionary when the file has a header in another way returns a list
         The folder must be entered in the CSVPath parameter in the config.json.
 
-        .. note::
-            This method return data as a string if necessary use some method to convert data like int().
-
-        >>> config.json
-        >>> "CSVPath" : "C:\\temp"
-
         :param csv_file: .csv file name
         :type csv_file: str
         :param delimiter: Delimiter option such like ';' or ',' or '|'
@@ -1241,33 +1235,6 @@ class Webapp():
         """
 
         return self.__webapp.report_comparison(base_file, current_file)
-
-    def GetGrid(self, grid_number=1, grid_element = None):
-        """
-        Gets a grid BeautifulSoup object from the screen.
-
-        :param grid_number: The number of the grid on the screen.
-        :type: int
-        :param grid_element: Grid class name in HTML ex: ".tgrid".
-        :type: str
-        :return: Grid BeautifulSoup object
-        :rtype: BeautifulSoup object
-
-        Usage:
-
-        >>> # Calling the method:
-        >>> my_grid = self.get_grid()
-        """
-        
-        return self.__webapp.get_grid_content(grid_number, grid_element)
-
-    def LengthGridLines(self, grid):
-        """
-        Returns the length of the grid.
-        :return:
-        """
-
-        return self.__webapp.LengthGridLines(grid)
 
 class Apw():
 

@@ -8,9 +8,9 @@ from tir.technologies.core.logging_config import logger
 
 class BaseDatabase(Base):
 
-    def __init__(self, config_path="", autostart=True):
-        super().__init__(config_path, autostart=False)
-        self.webapp_internal = WebappInternal(config_path, autostart=False)
+    def __init__(self):
+        super().__init__(autostart=False)
+        self.webapp_internal = WebappInternal(autostart=False)
         self.restart_counter = self.webapp_internal.restart_counter
 
     def odbc_connect(self, database_driver="", dbq_oracle_server="", database_server="", database_port=1521, database_name="", database_user="", database_password=""):

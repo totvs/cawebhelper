@@ -1651,7 +1651,7 @@ class WebappInternal(Base):
         
         return list(map(lambda x: (x[0], get_distance(xy_label, x[1])), position_list))
 
-    def SetValue(self, field, value, grid=False, grid_number=1, ignore_case=True, row=None, name_attr=False, position = 1, check_value=None):
+    def SetValue(self, field, value, grid=False, grid_number=1, ignore_case=True, row=None, name_attr=False, position = 1, check_value=True):
         """
         Sets value of an input element.
         
@@ -1696,26 +1696,12 @@ class WebappInternal(Base):
         >>> oHelper.SetValue("Order", "000001", grid=True, grid_number=2, check_value = False)
         >>> oHelper.LoadGrid()
         """
-
-        check_value = self.check_value(check_value)
-
         if grid:
             self.input_grid_appender(field, value, grid_number - 1, row = row, check_value = check_value)
         elif isinstance(value, bool):
             self.click_check_radio_button(field, value, name_attr, position)
         else:
             self.input_value(field, value, ignore_case, name_attr, position, check_value)
-
-    def check_value(self, check_value):
-
-        if check_value != None:
-            check_value = check_value
-        elif self.config.check_value != None:
-            check_value = self.config.check_value
-        else:
-            check_value = True
-
-        return check_value
 
     def input_value(self, field, value, ignore_case=True, name_attr=False, position=1, check_value=True):
         """
@@ -1842,9 +1828,8 @@ class WebappInternal(Base):
 
                         if user_value_size < interface_value_size:
                             self.send_keys(input_field(), Keys.ENTER)
-                        
-                        if not check_value:
-                            return
+                            if not check_value:
+                                return
 
                         if self.check_mask(input_field()):
                             current_value = self.remove_mask(self.get_web_value(input_field()).strip())
@@ -2637,7 +2622,7 @@ class WebappInternal(Base):
 
         submenu = ""
         endtime = time.time() + self.config.time_out
-        wait_screen = True if menu_itens != self.language.menu_about else False
+        wait_coin_screen = True if menu_itens != self.language.menu_about else False
         if save_input:
             self.config.routine = menu_itens
 
@@ -2654,7 +2639,6 @@ class WebappInternal(Base):
         count = 0
         try:
             for menuitem in menu_itens:
-                logger().info(f'Menu item: "{menuitem}"')
                 self.wait_blocker()
                 self.wait_until_to(expected_condition="element_to_be_clickable", element = ".tmenu", locator=By.CSS_SELECTOR )
                 self.wait_until_to(expected_condition="presence_of_all_elements_located", element = ".tmenu .tmenuitem", locator = By.CSS_SELECTOR )
@@ -2686,23 +2670,8 @@ class WebappInternal(Base):
 
             if not re.search("\([0-9]\)$", child.text): 
                 self.slm_click_last_item(f"#{child.attrs['id']} > label")
-            
-            menuitem_exists = lambda: self.element_exists(term=menuitem, scrap_type=enum.ScrapType.MIXED, optional_term=".tmenuitem",
-                                    main_container="body")
-            start_time = time.time()
-            while (time.time() < endtime) and (menuitem_exists() and menuitem != self.language.menu_about.split('>')[1].strip()):
-                elapsed_time = time.time() - start_time
-                self.wait_blocker()
-                time.sleep(1)
 
-                if elapsed_time >= 20:
-                    start_time = time.time()
-                    logger().info(f'Trying an additional click in last menu item: "{menuitem}"')
-                    if not re.search("\([0-9]\)$", child.text):
-                        self.slm_click_last_item(f"#{child.attrs['id']} > label")
-
-            if wait_screen and self.config.initial_program.lower() == 'sigaadv':
-                self.close_warning_screen_after_routine()
+            if wait_coin_screen and self.config.initial_program.lower() == 'sigaadv':
                 self.close_coin_screen_after_routine()
 
         except AssertionError as error:
@@ -2752,7 +2721,7 @@ class WebappInternal(Base):
             child_label_s.click()
         except Exception as e:
             if self.config.smart_test or self.config.debug_log:
-                logger().warning(f"Warning SetLateralMenu click last item method exception: {str(e)} ")
+                logger().exception(f"Warning SetLateralMenu click last item method exception: {str(e)} ")
 
         
 
@@ -3535,15 +3504,13 @@ class WebappInternal(Base):
             td = next(iter(current.select(f"td[id='{column_index}']")), None)
             success = td.text in text
 
-    def get_grid(self, grid_number=1, grid_element = None):
+    def get_grid(self, grid_number=0, grid_element = None):
         """
         [Internal]
         Gets a grid BeautifulSoup object from the screen.
 
         :param grid_number: The number of the grid on the screen.
         :type: int
-        :param grid_element: Grid class name in HTML ex: ".tgrid".
-        :type: str
         :return: Grid BeautifulSoup object
         :rtype: BeautifulSoup object
 
@@ -3552,9 +3519,6 @@ class WebappInternal(Base):
         >>> # Calling the method:
         >>> my_grid = self.get_grid()
         """
-
-        grid_number -= 1
-
         endtime = time.time() + self.config.time_out
         grids = None
         while(time.time() < endtime and not grids):
@@ -6940,11 +6904,8 @@ class WebappInternal(Base):
         Returns a dictionary when the file has a header in another way returns a list
         The folder must be entered in the CSVPath parameter in the config.json. Ex:
 
-        .. note::
-            This method return data as a string if necessary use some method to convert data like int().
-
         >>> config.json
-        >>> "CSVPath" : "C:\\temp"
+        >>> "CsvPath" : "C:\\temp"
 
         :param csv_file: .csv file name
         :type csv_file: str
@@ -6982,7 +6943,7 @@ class WebappInternal(Base):
         has_header = 'infer' if header else None
         
         if self.config.csv_path:
-            data = pd.read_csv(f"{self.config.csv_path}\\{csv_file}", sep=delimiter, encoding='latin-1', error_bad_lines=False, header=has_header, index_col=False, dtype=str)
+            data = pd.read_csv(f"{self.config.csv_path}\\{csv_file}", sep=delimiter, encoding='latin-1', error_bad_lines=False, header=has_header, index_col=False)
             df = pd.DataFrame(data)
             df = df.dropna(axis=1, how='all')
 
@@ -7307,24 +7268,3 @@ class WebappInternal(Base):
                 language = ['inglês', 'inglés', 'english']
 
             self.select_combo(selects, language, index=True)
-
-    def get_grid_content(self, grid_number, grid_element):
-        """
-
-        :param grid_number:
-        :param grid_element:
-        :return:
-        """
-        self.wait_element(term=".tgetdados tbody tr, .tgrid tbody tr, .tcbrowse",
-                          scrap_type=enum.ScrapType.CSS_SELECTOR)
-        grid = self.get_grid(grid_number, grid_element)
-
-        return grid.select('tbody tr')
-
-    def LengthGridLines(self, grid):
-        """
-        Returns the length of the grid.
-        :return:
-        """
-        
-        return len(grid)
