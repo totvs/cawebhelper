@@ -175,20 +175,20 @@ class Webapp():
         """
         self.__webapp.CheckView(text, element_type)
 
-    def ClickBox(self, fields, contents_list="", select_all=False, grid_number=1):
+    def ClickBox(self, fields, contents_list="", select_all=False, grid_number=1, itens=False):
         """
         Clicks on Checkbox elements of a grid.
 
-        :param field: The column to identify grid rows.
+        :param field: Comma divided string with values that must be checked, combine with content_list.
         :type field: str
         :param content_list: Comma divided string with values that must be checked. - **Default:** "" (empty string)
         :type content_list: str
         :param select_all: Boolean if all options should be selected. - **Default:** False
         :type select_all: bool
-        :param grid_number: Grid number of which grid should be used when there are multiple grids on the same screen. - **Default:** 1
+        :param grid_number: Which grid should be used when there are multiple grids on the same screen. - **Default:** 1
         :type grid_number: int
-        :param ignore_current: Boolean to ignore the get_current_filtered on loop case of box click. - **Default:** False
-        :type ignore_current: bool
+        :param itens: Bool parameter that click in all itens based in the field and content reference.
+        :type itens: bool
 
         Usage:
 
@@ -200,8 +200,14 @@ class Webapp():
         >>> #--------------------------------------------------
         >>> # Calling the method to select all checkboxes:
         >>> oHelper.ClickBox("Branch", select_all=True)
+        >>> #--------------------------------------------------
+        >>> # Calling the method to performe click based in 2 fields and contens:
+        >>> test_helper.ClickBox('Numero da SC, Item da SC', 'COM068, 0001')
+        >>> #--------------------------------------------------
+        >>> # Calling the method to click in all itens with this reference:
+        >>> test_helper.ClickBox('Numero da SC', 'COM068', itens=True)
         """
-        self.__webapp.ClickBox(fields, contents_list, select_all, grid_number)
+        self.__webapp.ClickBox(fields, contents_list, select_all, grid_number, itens)
 
     def ClickFolder(self, item, position=1):
         """
